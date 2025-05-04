@@ -6,8 +6,9 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.View;
+
 import androidx.appcompat.app.AppCompatActivity;
+
 import java.util.Random;
 
 public class MainActivity extends AppCompatActivity {
@@ -40,9 +41,12 @@ public class MainActivity extends AppCompatActivity {
     void startGame() {
         score = 0;
         scoreText.setText("Score: 0");
-        moveCircle();
-        circle.setVisibility(View.VISIBLE);
+
         startButton.setEnabled(false);
+
+        circle.setVisibility(View.VISIBLE);
+
+        circle.post(() -> moveCircle()); // Ensure layout is measured
 
         gameTimer = new CountDownTimer(30000, 1000) {
             public void onTick(long millisUntilFinished) {
@@ -57,12 +61,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     void moveCircle() {
-        RelativeLayout layout = (RelativeLayout) findViewById(R.id.circle).getParent();
+        RelativeLayout layout = (RelativeLayout) circle.getParent();
         int maxX = layout.getWidth() - circle.getWidth();
         int maxY = layout.getHeight() - circle.getHeight();
 
-        int x = random.nextInt(Math.max(maxX, 1));
-        int y = random.nextInt(Math.max(maxY, 1));
+        if (maxX < 1 || maxY < 1)
+            return; // Prevent crash on invalid layout size
+
+        int x = random.nextInt(maxX);
+        int y = random.nextInt(maxY);
 
         RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) circle.getLayoutParams();
         params.leftMargin = x;
